@@ -23,5 +23,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_PAGES_PUBLISH_FORCE_PUSH: "Updating webpages."
-        run: sbt gitHubPagesCreateGitHubPagesBranchIfNotExist
-        run: sbt makeSite publishToGitHubPages
+        run: |
+          sbt gitHubPagesCreateGitHubPagesBranchIfNotExist
+          sbt makeSite publishToGitHubPages
