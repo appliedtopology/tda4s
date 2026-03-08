@@ -9,9 +9,7 @@ import org.scalatest.propspec.AnyPropSpec
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import org.scalatest.matchers.should.Matchers
 
-class DoublePropertiesValidation extends AnyPropSpec
-  with ScalaCheckPropertyChecks
-  with Matchers:
+class DoublePropertiesValidation extends AnyPropSpec with ScalaCheckPropertyChecks with Matchers:
 
   val field = Field(0)
 
@@ -48,14 +46,12 @@ class DoublePropertiesValidation extends AnyPropSpec
   property("division reversal") {
     forAll { (x: Int, y: Int) =>
       (y != 0) ==> {
-        (field(x)/field(y))*field(y) == field(x)
+        (field(x) / field(y)) * field(y) == field(x)
       }
     }
   }
 
-class FF17PropertiesValidation extends AnyPropSpec
-  with ScalaCheckPropertyChecks
-  with Matchers:
+class FF17PropertiesValidation extends AnyPropSpec with ScalaCheckPropertyChecks with Matchers:
 
   val field = Field(17)
 

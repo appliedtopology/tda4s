@@ -12,9 +12,8 @@ lazy val root = (project in file("."))
   .settings(
     name := "tda4s",
     idePackagePrefix := Some("org.appliedtopology.tda4s"),
-    Compile / paradoxMaterialTheme := {
-      ParadoxMaterialTheme()
-    },
+    Compile / paradoxMaterialTheme :=
+      ParadoxMaterialTheme(),
     Compile / paradoxProperties ++= Map(
       "project.url" -> "https://appliedtopology.github.io/tda4s",
       "github.base_url" -> s"https://github.com/appliedtopology/tda4s/tree/${version.value}",

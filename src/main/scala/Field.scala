@@ -19,17 +19,15 @@ trait Field:
     def /(y: Self): Self = div(x, y)
 
 object Field:
-  /**
-   * Convenience method to create a field instance based on the given field characteristic.
-   * If the parameter is 0, the field instance corresponds to `Double` as a field.
-   * If the parameter is a prime number, the field instance corresponds to a finite field of order `p`.
-   *
-   * @param p The field characteristic.
-   *          If `p` is 0, the method returns an instance of `Double` as a field.
-   *          If `p` is a prime number, the method returns an instance of `FiniteField(p)`.
-   */
+  /** Convenience method to create a field instance based on the given field characteristic. If the parameter is 0, the field instance
+    * corresponds to `Double` as a field. If the parameter is a prime number, the field instance corresponds to a finite field of order `p`.
+    *
+    * @param p
+    *   The field characteristic. If `p` is 0, the method returns an instance of `Double` as a field. If `p` is a prime number, the method
+    *   returns an instance of `FiniteField(p)`.
+    */
   def apply(p: Int) = p match {
-    case 0 => summon[Double is Field]
+    case 0                                  => summon[Double is Field]
     case p if BigInt(p).isProbablePrime(10) => FiniteField(p).given_ffp_is_field
   }
 
@@ -55,7 +53,7 @@ object Field:
     override def apply(x: Int): Self = (x % p + p) % p
     def unapply(x: Self): Option[Int] = Some(x)
     override def toString: String = s"FiniteField($p)"
-    given given_ffp_is_field : (Self is Field) = this
+    given given_ffp_is_field: (Self is Field) = this
 
     def zero: Self = 0
     def one: Self = 1
