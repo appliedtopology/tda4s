@@ -1,8 +1,26 @@
 package org.appliedtopology.tda4s
 
+/** The Field trait provides the backbone for the mathematical field structure. Field is implemented as an opaque type `F` parameterized by
+  * the underlying type T which allows for abstraction and protects against undefined behaviors. We also implement a normalize method which
+  * just defaults to the input value. Overloaded in the finitefield extension for modular reduction.
+  *
+  * Fields contain two binary operations, addition and multiplication, identities for the corresponding operations, and inverses for every
+  * element except the additive identity. The field trait ensures that we have access to these operations, and we provide a means to
+  * overload the usual symbols to return addition and multiplication with respect to the field structure.
+  *
+  * @param T
+  *   The type class that field is wrapped around. Should be a double to access the field structure on the real numbers or an integer for a
+  *   finite field
+  */
 trait Field[T]:
   opaque type F = T
   def normalize(x: T): T = x
+
+  /** Companion object for the opaque `F` type to create field types.
+    *
+    * Our implementation of the field type leverages apply and unapply methods and conversions to perform field arithmetic and ensure type
+    * consistency.
+    */
   object F:
     def apply(t: T): F = t
     def unapply(t: F): Option[T] = Some(normalize(t))
@@ -30,6 +48,13 @@ trait Field[T]:
     def **(n: Int): F = pow(x, n)
     def *(n: Int): F = repAdd(x, n)
 
+/** DoubleIsField allows us to typecast double types as field types. We utilize match cases for all of the standard operations and we
+  * leverage apply and unapply here heavily to help simplify the syntax.
+  *
+  * @param eps
+  *   This float determines the size of the tolerance used to determine equality. If the absolute value of the difference between two field
+  *   values is less than epsilon, then the equality holds true
+  */
 class DoubleIsField(val eps: Double) extends Field[Double]:
   def add(x: F, y: F): F = (x, y) match { case (F(xx), F(yy)) => F(xx + yy) }
   def sub(x: F, y: F): F = (x, y) match { case (F(xx), F(yy)) => F(xx - yy) }
@@ -43,6 +68,12 @@ class DoubleIsField(val eps: Double) extends Field[Double]:
   def one: F = F(1.0)
   override def equiv(x: F, y: F): Boolean = (x, y) match { case (F(xx), F(yy)) => math.abs(xx - yy) < eps }
 
+/** Extension for a finite field with characteristic p. The mathematical structure of a field requires that the characteristic is prime to
+  * ensure the existence of multiplicative inverses modulo p, except for the additive identity.
+  *
+  * @param p
+  *   The field characteristic, all operations in the field are performed modulo p
+  */
 class FiniteFieldIsField(val p: Int) extends Field[Int]:
   require(p > 1 && BigInt(p).isProbablePrime(10), "p must be a prime number.")
   private val inverseTable: Array[Int] = Array.tabulate(p) { i =>
