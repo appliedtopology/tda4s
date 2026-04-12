@@ -14,8 +14,19 @@
  </div>
 </div>
 <div class="cover">
- <div class="doc"></div>
+ <div class="doc">
+  <p>Case Class for Simplex Object. Equipped with set difference (-), dimension, and a boundary map</p>
+ </div>
  <section id="attributes">
+  <h2 class="h500">Value parameters</h2>
+  <dl class="attributes">
+   <dt class="body-small">
+    vertices
+   </dt>
+   <dd class="body-medium">
+    <p>Simplexes are constructed from a sorted set of ints</p>
+   </dd>
+  </dl>
   <h2 class="h500">Attributes</h2>
   <dl class="attributes">
    <dt class="body-small">
@@ -114,9 +125,46 @@ node6 -> node2;
         </div>
         <div class="documentableElement" id="boundary-ffffffa8">
          <div class="documentableElement-expander">
+          <button class="icon-button ar show-content"></button>
           <div class="header monospace mono-medium">
            <div class="signature">
             <span class="modifiers"></span><span class="kind"><span t="k">def </span></span><a href="Simplex.html#boundary-ffffffa8" t="n" class="documentableName ">boundary</a>[<span t="k"></span><span data-unresolved-link="" t="t">T</span>](<span t="k"></span><span t="k"></span><span data-unresolved-link="" t="n">ordering</span>: <span data-unresolved-link="" t="t">Ordering</span>[<a href="Simplex.html" t="t">Simplex</a>])(<span t="k">using </span><span t="k"></span><span data-unresolved-link="" t="n">field</span>: <a href="Field.html" t="t">Field</a>[<span data-unresolved-link="" t="t">T</span>]): <a href="Chain.html" t="t">Chain</a>[<span data-unresolved-link="" t="t">T</span>]
+           </div>
+          </div>
+         </div>
+         <div class="docs">
+          <span class="modifiers"></span>
+          <div>
+           <div class="originInfo"></div>
+           <div class="memberDocumentation">
+            <div class="documentableBrief doc">
+             <p>The boundary of a k simplex is a chain of (k-1) simplexes, and these can be used to form a chain complex</p>
+            </div>
+            <div class="cover">
+             <div class="doc">
+              <p>The boundary of a k simplex is a chain of (k-1) simplexes, and these can be used to form a chain complex</p>
+             </div>
+             <h2 class="h200">Type parameters</h2>
+             <dl class="attributes attributes-small">
+              <dt class="body-small">
+               Field
+              </dt>
+              <dd class="body-medium">
+               <p>[T] type bound for our field, requires us to have an instantiation of F[T]</p>
+              </dd>
+             </dl>
+             <h2 class="h200">Value parameters</h2>
+             <dl class="attributes attributes-small">
+              <dt class="body-small">
+               ordering
+              </dt>
+              <dd class="body-medium">
+               <p>We need a way to define an ordering on simplexes for the sorted maps that store chains</p>
+              </dd>
+             </dl>
+             <h2 class="h200">Attributes</h2>
+             <dl class="attributes attributes-small"></dl>
+            </div>
            </div>
           </div>
          </div>
@@ -221,4 +269,4 @@ node6 -> node2;
    </div>
   </div>
  </div>
-</section></div><div id="toc" class="body-small"><div id="toc-container"><span class="toc-title h200">In this article</span><nav class="toc-nav"><ul class="toc-list"><li><a href="#attributes">Attributes</a></li><li><a href="#members-list">Members list</a><ul><li><a href="#Value-members">Value members</a><ul><li><a href="#Concrete-methods">Concrete methods</a></li><li><a href="#Inherited-methods">Inherited methods</a></li></ul></li></ul></li></ul></nav></div></div></div><div id="footer" class="body-small mobile-footer"><div class="left-container">Generated with</div><div class="right-container"><div class="text"></div></div><div class="text-mobile"></div></div></div></div></body></html>
+</section></div><div id="toc" class="body-small"><div id="toc-container"><span class="toc-title h200">In this article</span><nav class="toc-nav"><ul class="toc-list"><li><a href="#attributes">Value parameters</a></li><li><a href="#members-list">Members list</a><ul><li><a href="#Value-members">Value members</a><ul><li><a href="#Concrete-methods">Concrete methods</a></li><li><a href="#Inherited-methods">Inherited methods</a></li></ul></li></ul></li></ul></nav></div></div></div><div id="footer" class="body-small mobile-footer"><div class="left-container">Generated with</div><div class="right-container"><div class="text"></div></div><div class="text-mobile"></div></div></div></div></body></html>

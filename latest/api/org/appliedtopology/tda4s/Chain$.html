@@ -107,9 +107,52 @@ node3 -> node2;
         </div>
         <div class="documentableElement" id="from-2cf">
          <div class="documentableElement-expander">
+          <button class="icon-button ar show-content"></button>
           <div class="header monospace mono-medium">
            <div class="signature">
             <span class="modifiers"></span><span class="kind"><span t="k">def </span></span><a href="Chain$.html#from-2cf" t="n" class="documentableName ">from</a>[<span t="k"></span><span data-unresolved-link="" t="t">T</span>](<span t="k">using </span><span t="k"></span><span data-unresolved-link="" t="n">field</span>: <a href="Field.html" t="t">Field</a>[<span data-unresolved-link="" t="t">T</span>])(<span t="k"></span><span t="k"></span><span data-unresolved-link="" t="n">terms</span>: (<a href="Simplex.html" t="t">Simplex</a>, field.<a href="Field.html#F-0" t="t">F</a>)*)(<span t="k">using </span><span t="k"></span><span data-unresolved-link="" t="n">ordering</span>: <span data-unresolved-link="" t="t">Ordering</span>[<a href="Simplex.html" t="t">Simplex</a>]): <a href="Chain.html" t="t">Chain</a>[<span data-unresolved-link="" t="t">T</span>]
+           </div>
+          </div>
+         </div>
+         <div class="docs">
+          <span class="modifiers"></span>
+          <div>
+           <div class="originInfo"></div>
+           <div class="memberDocumentation">
+            <div class="documentableBrief doc">
+             <p>The from method allows for the construction of the Chain object from the components</p>
+            </div>
+            <div class="cover">
+             <div class="doc">
+              <p>The from method allows for the construction of the Chain object from the components</p>
+             </div>
+             <h2 class="h200">Type parameters</h2>
+             <dl class="attributes attributes-small">
+              <dt class="body-small">
+               Field
+              </dt>
+              <dd class="body-medium">
+               <p>[T] type bound for our field, requires us to have an instantiation of F[T]</p>
+              </dd>
+             </dl>
+             <h2 class="h200">Value parameters</h2>
+             <dl class="attributes attributes-small">
+              <dt class="body-small">
+               ordering
+              </dt>
+              <dd class="body-medium">
+               <p>We need a way to define an ordering on simplexes for the persistent homology algorithm to work</p>
+              </dd>
+              <dt class="body-small">
+               terms
+              </dt>
+              <dd class="body-medium">
+               <p>Collection of Simplex and field element to store in the chain map</p>
+              </dd>
+             </dl>
+             <h2 class="h200">Attributes</h2>
+             <dl class="attributes attributes-small"></dl>
+            </div>
            </div>
           </div>
          </div>

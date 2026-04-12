@@ -11,8 +11,20 @@
  </div>
 </div>
 <div class="cover">
- <div class="doc"></div>
+ <div class="doc">
+  <p>The Field trait provides the backbone for the mathematical field structure. Field is implemented as an opaque type <code>F</code> parameterized by the underlying type T which allows for abstraction and protects against undefined behaviors. We also implement a normalize method which just defaults to the input value. Overloaded in the finitefield extension for modular reduction.</p>
+  <p>Fields contain two binary operations, addition and multiplication, identities for the corresponding operations, and inverses for every element except the additive identity. The field trait ensures that we have access to these operations, and we provide a means to overload the usual symbols to return addition and multiplication with respect to the field structure.</p>
+ </div>
  <section id="attributes">
+  <h2 class="h500">Value parameters</h2>
+  <dl class="attributes">
+   <dt class="body-small">
+    T
+   </dt>
+   <dd class="body-medium">
+    <p>The type class that field is wrapped around. Should be a double to access the field structure on the real numbers or an integer for a finite field</p>
+   </dd>
+  </dl>
   <h2 class="h500">Attributes</h2>
   <dl class="attributes">
    <dt class="body-small">
@@ -107,8 +119,14 @@ node5 -> node0;
           <div>
            <div class="originInfo"></div>
            <div class="memberDocumentation">
+            <div class="documentableBrief doc">
+             <p>Companion object for the opaque <code>F</code> type to create field types.</p>
+            </div>
             <div class="cover">
-             <div class="doc"></div>
+             <div class="doc">
+              <p>Companion object for the opaque <code>F</code> type to create field types.</p>
+              <p>Our implementation of the field type leverages apply and unapply methods and conversions to perform field arithmetic and ensure type consistency.</p>
+             </div>
              <h2 class="h200">Attributes</h2>
              <dl class="attributes attributes-small">
               <dt class="body-small">
@@ -398,4 +416,4 @@ node5 -> node0;
    </div>
   </div>
  </div>
-</section></div><div id="toc" class="body-small"><div id="toc-container"><span class="toc-title h200">In this article</span><nav class="toc-nav"><ul class="toc-list"><li><a href="#attributes">Attributes</a></li><li><a href="#members-list">Members list</a><ul><li><a href="#Type-members">Type members</a><ul><li><a href="#Classlikes">Classlikes</a></li><li><a href="#Types">Types</a></li></ul></li><li><a href="#Value-members">Value members</a><ul><li><a href="#Abstract-methods">Abstract methods</a></li><li><a href="#Concrete-methods">Concrete methods</a></li></ul></li><li><a href="#Extensions">Extensions</a><ul><li><a href="#Extensions">Extensions</a></li></ul></li></ul></li></ul></nav></div></div></div><div id="footer" class="body-small mobile-footer"><div class="left-container">Generated with</div><div class="right-container"><div class="text"></div></div><div class="text-mobile"></div></div></div></div></body></html>
+</section></div><div id="toc" class="body-small"><div id="toc-container"><span class="toc-title h200">In this article</span><nav class="toc-nav"><ul class="toc-list"><li><a href="#attributes">Value parameters</a></li><li><a href="#members-list">Members list</a><ul><li><a href="#Type-members">Type members</a><ul><li><a href="#Classlikes">Classlikes</a></li><li><a href="#Types">Types</a></li></ul></li><li><a href="#Value-members">Value members</a><ul><li><a href="#Abstract-methods">Abstract methods</a></li><li><a href="#Concrete-methods">Concrete methods</a></li></ul></li><li><a href="#Extensions">Extensions</a><ul><li><a href="#Extensions">Extensions</a></li></ul></li></ul></li></ul></nav></div></div></div><div id="footer" class="body-small mobile-footer"><div class="left-container">Generated with</div><div class="right-container"><div class="text"></div></div><div class="text-mobile"></div></div></div></div></body></html>
