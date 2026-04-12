@@ -4,6 +4,11 @@ import collection.mutable
 import scala.collection.immutable.{SortedMap, SortedSet}
 import scala.collection.Set
 
+trait SimplexStream:
+  def simplices(): Iterator[Simplex]
+  def filtrationValues: PartialFunction[Simplex, Double]
+  def simplicesInDimension(d: Int): Iterator[Simplex]
+
 object PersistentHomology:
   def persistentHomology[T: Field as field](
       simplexStream: Iterator[Simplex],

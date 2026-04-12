@@ -3,6 +3,7 @@ package org.appliedtopology.tda4s
 import scala.collection.SortedSet
 
 case class Simplex(vertices: SortedSet[Int]):
+  def +(vertex: Int): Simplex = Simplex(vertices + vertex)
   def -(vertex: Int): Simplex = Simplex(vertices.diff(SortedSet(vertex)))
   def dimension: Int = vertices.size - 1
   def boundary[T: Field as field](ordering: Ordering[Simplex]): Chain[T] = {
@@ -14,6 +15,6 @@ case class Simplex(vertices: SortedSet[Int]):
 
 object Simplex:
   def apply(vertices: Int*): Simplex = Simplex(SortedSet(vertices*))
-  def from(vertices: Seq[Int]): Simplex = Simplex(SortedSet(vertices*))
+  def from[T <: IterableOnce[Int]](vertices: T): Simplex = Simplex(SortedSet(vertices.iterator.toSeq*))
   def unapply(simplex: Simplex): Option[SortedSet[Int]] = Some(simplex.vertices)
   def unapplySeq(simplex: Simplex): Option[Seq[Int]] = Some(simplex.vertices.toSeq)
