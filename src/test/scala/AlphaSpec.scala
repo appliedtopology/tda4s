@@ -12,8 +12,9 @@ class AlphaSpec extends AnyFlatSpec with Checkers with Matchers:
       (0 to 4)
         .map(j =>
           Array(
-            i.toDouble + rng.nextDouble(-0.05, 0.05),
-            j.toDouble + rng.nextDouble(-0.05, 0.05)
+            i.toDouble // + rng.nextDouble(-0.05, 0.05)
+            ,
+            j.toDouble // + rng.nextDouble(-0.05, 0.05)
           )
         )
         .toSeq
@@ -35,7 +36,7 @@ def time[R](label: String)(block: => R): R = {
   val t0 = System.nanoTime()
   val result = block
   val t1 = System.nanoTime()
-  (t1 - t0) match {
+  t1 - t0 match {
     case dt if dt < 1e3                => println(s"[$label] Elapsed time: ${dt} ns")
     case dt if dt < 1e6                => println(s"[$label] Elapsed time: ${dt / 1e3} µs")
     case dt if dt < 1e9                => println(s"[$label] Elapsed time: ${dt / 1e6} ms")
@@ -49,7 +50,7 @@ def time[R](label: String)(block: => R): R = {
 class AlphaTiming extends AnyFlatSpec with Checkers with Matchers:
   "alpha complex" should "have timings" in {
     val rng = RandomSource.MT.create()
-    (2 until 2).foreach { d =>
+    (2 until 4).foreach { d =>
       // 100 pts in unit cube each time
       val pts = (0 to 100).map(_ => rng.doubles(d).toArray).toSeq
       time(s"dim $d") {

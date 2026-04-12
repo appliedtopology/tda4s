@@ -69,13 +69,13 @@ class VietorisRipsValidation extends AnyFlatSpec with Checkers with Matchers:
     val D = 3
     val N = 10
     val aa = (0 until N).map(_ / N.toDouble)
-    val xy = aa.map(a => Array(cos(2 * 3.14 * a)+rng.nextDouble(-0.05,0.05), sin(2 * 3.14 * a)+rng.nextDouble(-0.05,0.05))).toSeq
+    val xy = aa.map(a => Array(cos(2 * 3.14 * a) + rng.nextDouble(-0.05, 0.05), sin(2 * 3.14 * a) + rng.nextDouble(-0.05, 0.05))).toSeq
     val metricSpace = VectorMetricSpace("euclidean", xy)
     val vrStream = NaiveVietorisRips(metricSpace)
     val barcode = PersistentHomology.persistentHomology(vrStream.simplices().filter(_.dimension <= D), vrStream.filtrationValues)
     val salientBars = barcode.filter((bar: (Int, Double, Double)) => bar._1 < D)
     val numBars = salientBars
-      .filter((bar : (Int, Double, Double)) => (bar._3 - bar._2) > 0.75)
+      .filter((bar: (Int, Double, Double)) => (bar._3 - bar._2) > 0.75)
       .size
     numBars shouldEqual 2
   }
@@ -86,19 +86,17 @@ class AlphashapeValidation extends AnyFlatSpec with Checkers with Matchers:
     val D = 2
     val N = 10
     val aa = (0 until N).map(_ / N.toDouble)
-    val xy = aa.map(a => Array(cos(2 * 3.14 * a)+rng.nextDouble(-0.05,0.05), sin(2 * 3.14 * a)+rng.nextDouble(-0.05,0.05))).toSeq
+    val xy = aa.map(a => Array(cos(2 * 3.14 * a) + rng.nextDouble(-0.05, 0.05), sin(2 * 3.14 * a) + rng.nextDouble(-0.05, 0.05))).toSeq
     val alpha = Alpha(xy)
     val barcode = PersistentHomology.persistentHomology(alpha.simplices().filter(_.dimension <= D), alpha.filtrationValues)
     val salientBars = barcode.filter((bar: (Int, Double, Double)) => bar._1 < D)
     val numBars = salientBars
-      .filter((bar : (Int, Double, Double)) => (bar._3 - bar._2) > 0.5)
+      .filter((bar: (Int, Double, Double)) => (bar._3 - bar._2) > 0.5)
       .size
-    java.nio.file.Files.write(
-      java.nio.file.Paths.get("circle.svg"),
-      SVG.plotComplex(alpha.simplices().toSeq, xy.map(p => p.map(v => v*100.0))).getBytes)
+    java.nio.file.Files
+      .write(java.nio.file.Paths.get("circle.svg"), SVG.plotComplex(alpha.simplices().toSeq, xy.map(p => p.map(v => v * 100.0))).getBytes)
     numBars shouldEqual 2
   }
-
 
 class KleinBottleValidation extends AnyFlatSpec with Checkers with Matchers:
   "the Klein bottle" should "have different barcodes" in {
