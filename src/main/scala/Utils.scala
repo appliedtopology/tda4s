@@ -2,6 +2,9 @@ package org.appliedtopology.tda4s
 
 import scala.collection.immutable.IndexedSeqDefaults.defaultApplyPreferredMaxLength.{+, -}
 
+/** Object with utilities for visualizing complexes using Support Vector Graphics (SVG)
+  * Functionality for up to 2-simplexes
+  */
 object SVG:
   def plotComplex(simplices: Seq[Simplex], positions: Seq[Array[Double]]): String = {
     val xmin = positions.map(_(0)).min
