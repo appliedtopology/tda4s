@@ -27,9 +27,9 @@ case class Simplex(vertices: SortedSet[Int]):
   }
 
 /** Companion object for the Simplex Class, used for several static methods relating to Simplexes
- * Particularly it's leveraged as a class factory to construct Simplexes from iterable collections
- * and destruct them as necessary
- */
+  * Particularly it's leveraged as a class factory to construct Simplexes from iterable collections
+  * and destruct them as necessary
+  */
 object Simplex:
   def apply(vertices: Int*): Simplex = Simplex(SortedSet(vertices*))
   def from[T <: IterableOnce[Int]](vertices: T): Simplex = Simplex(SortedSet(vertices.iterator.toSeq*))
