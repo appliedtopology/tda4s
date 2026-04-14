@@ -9,11 +9,9 @@ import scala.collection.Set
   *   metric space where the underlying metric is used to compute distances between points for the filtration values
   */
 trait VietorisRips(val metricSpace: MetricSpace[Int]) extends SimplexStream:
-
-  /** partial function that computes the filtration of a simplex
-    * returns -infinity is the simplex is empty,
-    * 0 for a 0-dimensional simplex, and the largest pairwise distance for a higher dimensional simplex
-    */
+  // partial function that computes the filtration of a simplex
+  // returns -infinity is the simplex is empty,
+  // 0 for a 0-dimensional simplex, and the largest pairwise distance for a higher dimensional simplex
   def filtrationValues: PartialFunction[Simplex, Double] = {
     case spx if spx.vertices.isEmpty => Double.NegativeInfinity
     case spx if spx.dimension == 0   => 0.0
