@@ -78,7 +78,7 @@ case class DelaunaySimplex(simplex: Simplex, circumsphere: Hypersphere)
 class HelixDelaunay(pts: Seq[Array[Double]]) extends SimplexStream {
   val points: Seq[Point] = pts.map(Point.apply)
   val ambientDimension: Int = points.head.getDimension
-  if(false) { // perturb the points to avoid cosphericity issues
+  if (false) { // perturb the points to avoid cosphericity issues
     val minDist: Double = (for
       v <- points
       w <- points
@@ -151,12 +151,12 @@ class HelixDelaunay(pts: Seq[Array[Double]]) extends SimplexStream {
 
   def addFrontierCase(simplex: DelaunaySimplex, complement: Int): Unit =
     frontierCases.zipWithIndex.find((fc: FrontierCase, i: Int) => fc.facet.vertices == simplex.simplex.vertices) match {
-      case None => 
+      case None =>
         // println(s"Adding frontier case: $simplex, complement: $complement")
         frontierCases.addOne(
           FrontierCase(simplex, complement)
         )
-      case Some((otherCase, otherIndex)) => 
+      case Some((otherCase, otherIndex)) =>
         // println(s"Doubled up frontier case: $otherCase, complement: $complement, index: $otherIndex")
         frontierCases.remove(otherIndex)
     }
@@ -215,9 +215,7 @@ class HelixDelaunay(pts: Seq[Array[Double]]) extends SimplexStream {
     // so we need to pick a tiling subset of them. We start a local version of this frontier walking algorithm
     // we also need to make sure we don't come back inside this cospherical point set in a later iteration
     cospherical.add(spherepoints.toSet)
-    frontierCases.removeAll((fc: FrontierCase) =>
-      fc.facet.vertices.subsetOf(cosphericalPoints.toSet)
-    )
+    frontierCases.removeAll((fc: FrontierCase) => fc.facet.vertices.subsetOf(cosphericalPoints.toSet))
     spherepoints.subtractAll(newDelaunaySimplex.simplex.vertices)
     // println(s"\tRemaining spherepoints: $spherepoints")
     val facets: mutable.ArrayDeque[(Simplex, Simplex)] =
@@ -229,7 +227,7 @@ class HelixDelaunay(pts: Seq[Array[Double]]) extends SimplexStream {
       // println(s"\tFacet: $facet, cofacet: $cofacet")
       val hyperplane: Hyperplane = Hyperplane.from(facet.vertices.toSeq.map(points)) match {
         case candidateHP if candidateHP.isLight(points(complement)) => candidateHP.reverse
-        case candidateHP                                                                              => candidateHP
+        case candidateHP                                            => candidateHP
       } // TODO: this doesn't work, maybe the Deque is the wrong data structure here?
       spherepoints.filter(hyperplane.isLight.compose(points)).headOption match {
         case Some(pi) =>
