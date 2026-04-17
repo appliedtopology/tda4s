@@ -21,13 +21,11 @@ class AlphaSpec extends AnyFlatSpec with Checkers with Matchers:
     )
     val alpha = Alpha(points)
     val dim0 = alpha.simplicesInDimension(0).toSeq.size
-    dim0 == 25 should be
     val dim1 = alpha.simplicesInDimension(1).toSeq.size
-    dim1 > 25 should be
     val dim2 = alpha.simplicesInDimension(2).toSeq.size
-    dim2 > 10 should be
     java.nio.file.Files
       .write(java.nio.file.Paths.get("grid.svg"), SVG.plotComplex(alpha.simplices().toSeq, points.map(p => p.map(v => 100 * v))).getBytes)
+    assert((dim0,dim1,dim2) == (25,56,32))
     println((dim0, dim1, dim2))
 
   }
