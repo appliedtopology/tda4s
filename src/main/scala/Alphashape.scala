@@ -11,10 +11,14 @@ import scala.util.chaining.*
 
 import scala.jdk.CollectionConverters.*
 
-def Alpha(pts: Seq[Array[Double]]): SimplexStream = pts match {
+final case class Epsilon(epsilon: Double)
+given Epsilon = Epsilon(1e-5)
+
+def Alpha(pts: Seq[Array[Double]])(using epsilon: Epsilon): SimplexStream = pts match {
   case pts if pts.isEmpty => HelixDelaunay(pts)
-  case pts if pts.head.length > 0 =>
+  case pts if pts.head.length > 7 =>
     HelixDelaunay(pts) // Helix should be faster for dim: 7 - 17. Adjust this check when additional impl exists.
+  case pts => HelixDelaunay(pts)
 }
 
 // utilities for Delaunay computations
@@ -30,13 +34,13 @@ case class Hyperplane(normal: Point, offset: Double):
   def reverse: Hyperplane = Hyperplane(normal.mapMultiply(-1.0), -offset)
 
 object Hyperplane:
-  def from(pointSet: Seq[Point]): Hyperplane = {
+  def from(pointSet: Seq[Point])(using epsilon: Epsilon): Hyperplane = {
     assert(pointSet.size >= pointSet.head.getDimension)
     val points = pointSet.map(p => p.subtract(pointSet.head))
     // now we need to find a basis of orthogonal complement to the space spanned by these
     val A = MatrixUtils.createRealMatrix(points.toSeq.map(_.toArray).toArray)
     val svdA = SingularValueDecomposition(A.transpose)
-    val nullSV = svdA.getSingularValues.zipWithIndex.filter(_._1.abs < 1e-5)
+    val nullSV = svdA.getSingularValues.zipWithIndex.filter(_._1.abs < epsilon.epsilon)
     val n = nullSV.map((s, i) => svdA.getU.getColumnVector(i)).head // should leave out head if we want higher codimensions
     val offset = n.dotProduct(pointSet.head)
     Hyperplane(n, offset)
@@ -52,10 +56,10 @@ object Ridge:
     Ridge((normal1, normal2))
   }
 
-case class Hypersphere(center: Point, radius: Double):
-  def contains(point: Point): Boolean = point.subtract(center).getNorm < radius - 1e-5
+case class Hypersphere(center: Point, radius: Double)(using epsilon: Epsilon):
+  def contains(point: Point): Boolean = point.subtract(center).getNorm < radius - epsilon.epsilon
 
-  def onSphere(point: Point): Boolean = math.abs(point.subtract(center).getNorm - radius) < 1e-5
+  def onSphere(point: Point): Boolean = math.abs(point.subtract(center).getNorm - radius) < epsilon.epsilon
 
 object Hypersphere:
   def apply(pointSet: Seq[Point]): Hypersphere = {
@@ -75,17 +79,9 @@ case class DelaunaySimplex(simplex: Simplex, circumsphere: Hypersphere)
 /** Based on https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=10917453&tag=1
   * @param pts - the input points to triangulate
   */
-class HelixDelaunay(pts: Seq[Array[Double]]) extends SimplexStream {
+class HelixDelaunay(pts: Seq[Array[Double]])(using epsilon: Epsilon) extends SimplexStream {
   val points: Seq[Point] = pts.map(Point.apply)
   val ambientDimension: Int = points.head.getDimension
-  if (false) { // perturb the points to avoid cosphericity issues
-    val minDist: Double = (for
-      v <- points
-      w <- points
-      if v != w
-    yield v.getDistance(w)).min
-    points.foreach((p: Point) => (0 until ambientDimension).foreach(i => p.addToEntry(i, Random.nextDouble() * (minDist * 1e-2))))
-  }
   val validated: mutable.Set[DelaunaySimplex] = mutable.Set.empty
   val candidate: mutable.ArrayDeque[Simplex] = mutable.ArrayDeque.empty
 
@@ -94,26 +90,20 @@ class HelixDelaunay(pts: Seq[Array[Double]]) extends SimplexStream {
     var convexHullHP: Boolean = false
     while (!convexHullHP) {
       val currentHP: Hyperplane = Hyperplane.from(startingSimplex.map(p => points(p)).toSeq)
-      val lightPoints = (points.indices.toSet -- startingSimplex).filter(pi => currentHP.dist(points(pi)) > 1e-5)
+      val lightPoints = (points.indices.toSet -- startingSimplex).filter(pi => currentHP.dist(points(pi)) > epsilon.epsilon)
       if (lightPoints.isEmpty) convexHullHP = true
       else {
         startingSimplex = (lightPoints ++ startingSimplex).toSeq
           .pipe(Random.shuffle)
           .take(ambientDimension)
           .toSet
-        //      startingSimplex = (lightPoints ++ startingSimplex)
-        //        .map(p => p -> currentHP.dist(points(p)))
-        //        .toSeq
-        //        .sortBy(_._2)
-        //        .takeRight(ambientDimension)
-        //        .map(_._1)
-        //        .toSet
       }
     }
-    startingSimplex = points.indices.filter(pi => Hyperplane.from(startingSimplex.map(points).toSeq).dist(points(pi)).abs < 1e-5) match {
-      case vs if vs.size == ambientDimension => vs.toSet
-      case vs if vs.size > ambientDimension  => Set(vs.head, vs.tail.minBy(vi => points(vs.head).getDistance(points(vi))))
-    }
+    startingSimplex =
+      points.indices.filter(pi => Hyperplane.from(startingSimplex.map(points).toSeq).dist(points(pi)).abs < epsilon.epsilon) match {
+        case vs if vs.size == ambientDimension => vs.toSet
+        case vs if vs.size > ambientDimension  => Set(vs.head, vs.tail.minBy(vi => points(vs.head).getDistance(points(vi))))
+      }
 
     // brute force search for first delaunay simplex
     var done = false
@@ -160,53 +150,6 @@ class HelixDelaunay(pts: Seq[Array[Double]]) extends SimplexStream {
         // println(s"Doubled up frontier case: $otherCase, complement: $complement, index: $otherIndex")
         frontierCases.remove(otherIndex)
     }
-  def handleCosphericalPoints_(
-      cosphericalPoints: Seq[Int],
-      frontierCase: FrontierCase,
-      newDelaunaySimplex: DelaunaySimplex
-  ): (Seq[Simplex], Seq[(Simplex, Int)]) = {
-    // println(s"Handling cospherical points by random displacement: $cosphericalPoints")
-    val localPoints: Seq[Point] = cosphericalPoints.map(points)
-    val smallestDist = localPoints
-      .flatMap(p =>
-        localPoints.map(q =>
-          p.getDistance(q) match {
-            case 0 => Double.PositiveInfinity
-            case d => d
-          }
-        )
-      )
-      .min
-    val perturbedPoints: Seq[Array[Double]] =
-      localPoints.map((p: Point) => p.toArray.mapInPlace(_ * (1 + (1e-5 * smallestDist) * util.Random.nextDouble)))
-    val localDelaunay = HelixDelaunay(perturbedPoints)
-    val newFaces: Set[Simplex] = localDelaunay.validated.toSet.map(_.simplex)
-    val newFrontier: mutable.Set[(Simplex, Int, Simplex)] = mutable.Set.empty
-    newFaces.foreach { s =>
-      val facets = s.vertices.toSeq
-        .map(i => (s, i, s - i))
-        .foreach { (s, i, v) =>
-          if ((s, i) != (frontierCase.facet, frontierCase.complement)) {
-            if (newFrontier.exists((ss, ii, vv) => v == vv)) {
-              newFrontier.remove((s, i, v))
-            } else {
-              newFrontier.add((s, i, v))
-            }
-          }
-        }
-    }
-    (
-      newFaces.toSeq
-        .map(s => Simplex(s.vertices.map(j => cosphericalPoints(j)))),
-      newFrontier.toSeq
-        .map((s, i, _) =>
-          (
-            Simplex.from(s.vertices.map(j => cosphericalPoints(j))),
-            cosphericalPoints(i)
-          )
-        )
-    )
-  }
 
   def handleCosphericalPoints(cosphericalPoints: Seq[Int], frontierCase: FrontierCase, newDelaunaySimplex: DelaunaySimplex): Unit = {
     // println(s"Handling cospherical points by tiling: $cosphericalPoints")
@@ -228,7 +171,7 @@ class HelixDelaunay(pts: Seq[Array[Double]]) extends SimplexStream {
       val hyperplane: Hyperplane = Hyperplane.from(facet.vertices.toSeq.map(points)) match {
         case candidateHP if candidateHP.isLight(points(complement)) => candidateHP.reverse
         case candidateHP                                            => candidateHP
-      } // TODO: this doesn't work, maybe the Deque is the wrong data structure here?
+      }
       spherepoints.filter(hyperplane.isLight.compose(points)).headOption match {
         case Some(pi) =>
           // println(s"\tFound light point: $pi creating Delaunay simplex: ${facet+pi}")
@@ -246,7 +189,7 @@ class HelixDelaunay(pts: Seq[Array[Double]]) extends SimplexStream {
   val seedDelaunaySimplex: DelaunaySimplex = validated.head
   points.indices
     .map(i => (i, seedDelaunaySimplex.circumsphere.center.getDistance(points(i))))
-    .filter((i, d) => math.abs(d - seedDelaunaySimplex.circumsphere.radius) <= 1e-5)
+    .filter((i, d) => math.abs(d - seedDelaunaySimplex.circumsphere.radius) <= epsilon.epsilon)
     .map(_._1)
     .to(mutable.SortedSet) match {
     case spherepoints if spherepoints.size > ambientDimension + 1 =>
@@ -265,23 +208,6 @@ class HelixDelaunay(pts: Seq[Array[Double]]) extends SimplexStream {
     if (!visitedFacets.contains(frontierCase.facet)) {
       visitedFacets.add(frontierCase.facet)
       // "light points" (in front of the facet) split into inside and outside a small circumsphere of the facet
-//      val circumsphere = Hypersphere(frontierCase.facet.vertices.toSeq.map(points))
-//      val (inside, outside) = (points.indices.toSet -- frontierCase.facet.vertices)
-//        .filter(pi => frontierCase.hyperplane.isLight(points(pi)))
-//        .partition(pi => circumsphere.contains(points(pi)))
-//      if ((inside ++ outside).nonEmpty) {
-//        val newDelaunaySimplex: DelaunaySimplex = if (inside.nonEmpty) {
-//          inside
-//            .map(pi => frontierCase.facet.vertices + pi)
-//            .map(vs => DelaunaySimplex(Simplex(vs), Hypersphere(vs.toSeq.map(points))))
-//            .maxBy(_.circumsphere.radius)
-//        } else {
-//          outside
-//            // .filter(pi => frontierCase.cofacetHypersphere.center.getDistance(points(pi)) <= 2 * frontierCase.cofacetHypersphere.radius)
-//            .map(pi => frontierCase.facet.vertices + pi)
-//            .map(vs => DelaunaySimplex(Simplex(vs), Hypersphere(vs.toSeq.map(points))))
-//            .minBy(_.circumsphere.radius)
-//        }
       val circumsphere = Hypersphere(frontierCase.facet.vertices.toSeq.map(points))
       (points.indices.toSet -- frontierCase.facet.vertices).toSeq
         .filter(pi => frontierCase.hyperplane.isLight(points(pi)))
@@ -321,7 +247,7 @@ class HelixDelaunay(pts: Seq[Array[Double]]) extends SimplexStream {
     val Seq(src, tgt) = s.vertices.toSeq
     val circumcenter: Point = points(src).add(points(tgt)).mapMultiply(0.5)
     val circumsphere = Hypersphere(circumcenter, circumcenter.getDistance(points(src)))
-    if (points.filter(p => circumcenter.getDistance(p) < circumsphere.radius - 1e-5).size > 0) None
+    if (points.filter(p => circumcenter.getDistance(p) < circumsphere.radius - epsilon.epsilon).size > 0) None
     else Some(circumsphere.radius)
   }
 
