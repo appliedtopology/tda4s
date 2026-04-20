@@ -1,9 +1,13 @@
 package org.appliedtopology.tda4s
 
+import org.apache.commons.math3.linear.MatrixUtils
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatestplus.scalacheck.Checkers
 import org.scalatest.matchers.should.Matchers
 import org.apache.commons.rng.simple.RandomSource
+
+import scala.Console.in
+import scala.util.chaining.*
 
 class AlphaSpec extends AnyFlatSpec with Checkers with Matchers:
   "the alpha complex" should "have simplices" in {
@@ -54,6 +58,40 @@ class AlphaTiming extends AnyFlatSpec with Checkers with Matchers:
       time(s"dim $d") {
         val alpha = Alpha(pts)
         assert(alpha.simplices().toSeq.size > 0)
+      }
+    }
+  }
+
+class HelixPaperExamples extends AnyFlatSpec with Checkers with Matchers:
+  val cases = Map(
+    2 -> Seq(40, 45),
+    5 -> Seq(40, 45),
+    11 -> Seq(40, 45), // Seq(40, 226, 288, 350, 700, 900),
+    14 -> Seq(40, 45), // Seq(40, 64, 76, 88, 100, 125),
+    17 -> Seq(40, 45) // Seq(40, 44, 48, 60, 64, 75)
+  )
+  val rng = RandomSource.MT.create()
+  cases.foreach { timingcase =>
+    val (dim, counts) = timingcase
+    counts.foreach { count =>
+      s"dim $dim, count $count:" should "have timings" ignore {
+        val pts = (0 to count)
+          .map(_ =>
+            rng
+              .doubles(dim)
+              .toArray
+              .pipe(rs =>
+                val v = MatrixUtils.createRealVector(rs)
+                v.unitize()
+                v
+              )
+              .toArray
+          )
+          .toSeq
+        time(s"dim $dim, count $count: ") {
+          val alpha = Alpha(pts)
+          assert(alpha.simplices().toSeq.size > 0)
+        }
       }
     }
   }

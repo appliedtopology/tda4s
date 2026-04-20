@@ -11,6 +11,8 @@ import scala.util.chaining.*
 
 import scala.jdk.CollectionConverters.*
 
+import java.util.concurrent.*
+
 final case class Epsilon(epsilon: Double)
 given Epsilon = Epsilon(1e-5)
 
@@ -135,21 +137,14 @@ class HelixDelaunay(pts: Seq[Array[Double]])(using epsilon: Epsilon) extends Sim
         FrontierCase(facet, hyperplane, complement, cofacet.circumsphere)
     }
 
-  val frontierCases: mutable.ArrayDeque[FrontierCase] = mutable.ArrayDeque.empty
+  // val frontierCases: mutable.ArrayDeque[FrontierCase] = mutable.ArrayDeque.empty
+  val frontierCases: LinkedBlockingDeque[FrontierCase] = LinkedBlockingDeque[FrontierCase]()
   val visitedFacets: mutable.Set[Simplex] = mutable.Set(Simplex.from(startingSimplex))
   val cospherical: mutable.Set[Set[Int]] = mutable.Set.empty
 
   def addFrontierCase(simplex: DelaunaySimplex, complement: Int): Unit =
-    frontierCases.zipWithIndex.find((fc: FrontierCase, i: Int) => fc.facet.vertices == simplex.simplex.vertices) match {
-      case None =>
-        // println(s"Adding frontier case: $simplex, complement: $complement")
-        frontierCases.addOne(
-          FrontierCase(simplex, complement)
-        )
-      case Some((otherCase, otherIndex)) =>
-        // println(s"Doubled up frontier case: $otherCase, complement: $complement, index: $otherIndex")
-        frontierCases.remove(otherIndex)
-    }
+    val removed = frontierCases.removeIf((fc: FrontierCase) => fc.facet.vertices == simplex.simplex.vertices)
+    if (!removed) frontierCases.put(FrontierCase(simplex, complement))
 
   def handleCosphericalPoints(cosphericalPoints: Seq[Int], frontierCase: FrontierCase, newDelaunaySimplex: DelaunaySimplex): Unit = {
     // println(s"Handling cospherical points by tiling: $cosphericalPoints")
@@ -158,7 +153,7 @@ class HelixDelaunay(pts: Seq[Array[Double]])(using epsilon: Epsilon) extends Sim
     // so we need to pick a tiling subset of them. We start a local version of this frontier walking algorithm
     // we also need to make sure we don't come back inside this cospherical point set in a later iteration
     cospherical.add(spherepoints.toSet)
-    frontierCases.removeAll((fc: FrontierCase) => fc.facet.vertices.subsetOf(cosphericalPoints.toSet))
+    frontierCases.removeIf((fc: FrontierCase) => fc.facet.vertices.subsetOf(cosphericalPoints.toSet))
     spherepoints.subtractAll(newDelaunaySimplex.simplex.vertices)
     // println(s"\tRemaining spherepoints: $spherepoints")
     val facets: mutable.ArrayDeque[(Simplex, Simplex)] =
@@ -198,12 +193,12 @@ class HelixDelaunay(pts: Seq[Array[Double]])(using epsilon: Epsilon) extends Sim
         FrontierCase(seedDelaunaySimplex, seedDelaunaySimplex.simplex.vertices.diff(startingSimplex).head),
         seedDelaunaySimplex
       )
-    case spherepoints => frontierCases.addAll(startingSimplex.map(pi => FrontierCase(seedDelaunaySimplex, pi)).toSeq)
+    case spherepoints => startingSimplex.foreach(pi => frontierCases.put(FrontierCase(seedDelaunaySimplex, pi)))
   }
 
   // handle a frontier case
-  while (frontierCases.nonEmpty) {
-    val frontierCase = frontierCases.removeHead()
+  while (!frontierCases.isEmpty) {
+    val frontierCase = frontierCases.take()
     // println(s"Handling frontier case: $frontierCase")
     if (!visitedFacets.contains(frontierCase.facet)) {
       visitedFacets.add(frontierCase.facet)
