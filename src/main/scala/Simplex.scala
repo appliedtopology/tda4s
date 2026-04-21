@@ -8,6 +8,7 @@ import scala.collection.SortedSet
   *   Simplexes are constructed from a sorted set of ints
   */
 case class Simplex(vertices: SortedSet[Int]):
+  def +(vertex: Int): Simplex = Simplex(vertices.union(Set(vertex)))
   // Removal of set element to construct the boundary
   def -(vertex: Int): Simplex = Simplex(vertices.diff(SortedSet(vertex)))
   def dimension: Int = vertices.size - 1
@@ -31,6 +32,6 @@ case class Simplex(vertices: SortedSet[Int]):
 // and destruct them as necessary
 object Simplex:
   def apply(vertices: Int*): Simplex = Simplex(SortedSet(vertices*))
-  def from(vertices: Seq[Int]): Simplex = Simplex(SortedSet(vertices*))
+  def from[T <: IterableOnce[Int]](vertices: T): Simplex = Simplex(SortedSet(vertices.iterator.toSeq*))
   def unapply(simplex: Simplex): Option[SortedSet[Int]] = Some(simplex.vertices)
   def unapplySeq(simplex: Simplex): Option[Seq[Int]] = Some(simplex.vertices.toSeq)

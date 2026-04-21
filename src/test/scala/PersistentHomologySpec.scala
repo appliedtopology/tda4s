@@ -1,6 +1,5 @@
 package org.appliedtopology.tda4s
 
-import language.experimental.modularity
 import org.scalacheck.Properties
 import org.scalacheck.Prop.{forAll, propBoolean}
 import org.scalatest.flatspec.AnyFlatSpec
@@ -9,7 +8,8 @@ import org.scalatestplus.scalacheck.{Checkers, ScalaCheckPropertyChecks}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.matchers.should.Matchers.shouldEqual
 
-import scala.Console.in
+import org.apache.commons.rng.simple.RandomSource
+
 import scala.math.{cos, sin}
 import scala.collection.Set
 
@@ -61,21 +61,40 @@ class PersistentHomologySpec extends AnyFlatSpec:
     PersistentHomology.persistentHomology(simplexstream, filtrationValues).sorted shouldEqual expectedBarcode.sorted
   }
 
+val rng = RandomSource.MT.create()
+
 class VietorisRipsValidation extends AnyFlatSpec with Checkers with Matchers:
   "the circle" should "have barcode" in {
     given FiniteFieldIsField(17)
     val D = 3
     val N = 10
     val aa = (0 until N).map(_ / N.toDouble)
-    val xy = aa.map(a => Array(cos(2 * 3.14 * a), sin(2 * 3.14 * a))).toSeq
+    val xy = aa.map(a => Array(cos(2 * 3.14 * a) + rng.nextDouble(-0.05, 0.05), sin(2 * 3.14 * a) + rng.nextDouble(-0.05, 0.05))).toSeq
     val metricSpace = VectorMetricSpace("euclidean", xy)
     val vrStream = NaiveVietorisRips(metricSpace)
     val barcode = PersistentHomology.persistentHomology(vrStream.simplices().filter(_.dimension <= D), vrStream.filtrationValues)
     val salientBars = barcode.filter((bar: (Int, Double, Double)) => bar._1 < D)
     val numBars = salientBars
-      .map((bar: (Int, Double, Double)) => bar._3 - bar._2)
-      .filter(_ > 1.0)
+      .filter((bar: (Int, Double, Double)) => (bar._3 - bar._2) > 0.75)
       .size
+    numBars shouldEqual 2
+  }
+
+class AlphashapeValidation extends AnyFlatSpec with Checkers with Matchers:
+  "the circle" should "have barcode" in {
+    given FiniteFieldIsField(17)
+    val D = 2
+    val N = 10
+    val aa = (0 until N).map(_ / N.toDouble)
+    val xy = aa.map(a => Array(cos(2 * 3.14 * a) + rng.nextDouble(-0.05, 0.05), sin(2 * 3.14 * a) + rng.nextDouble(-0.05, 0.05))).toSeq
+    val alpha = Alpha(xy)
+    val barcode = PersistentHomology.persistentHomology(alpha.simplices().filter(_.dimension <= D), alpha.filtrationValues)
+    val salientBars = barcode.filter((bar: (Int, Double, Double)) => bar._1 < D)
+    val numBars = salientBars
+      .filter((bar: (Int, Double, Double)) => (bar._3 - bar._2) > 0.5)
+      .size
+    java.nio.file.Files
+      .write(java.nio.file.Paths.get("circle.svg"), SVG.plotComplex(alpha.simplices().toSeq, xy.map(p => p.map(v => v * 100.0))).getBytes)
     numBars shouldEqual 2
   }
 

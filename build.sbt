@@ -45,7 +45,11 @@ lazy val scalacheckVersion = "1.17.0" // Or the latest compatible version
 
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % scalatestVersion % Test,
-  "org.scalatestplus" %% "scalacheck-1-17" % s"$scalatestVersion.0" % Test
+  "org.scalatestplus" %% "scalacheck-1-17" % s"$scalatestVersion.0" % Test,
+  "org.apache.commons" % "commons-rng-simple" % "1.6",
+  "org.apache.commons" % "commons-math3" % "3.6.1",
+  "io.github.zabuzard.closy" % "closy" % "1.2.1",
+  "com.gurobi" % "gurobi" % "13.0.1"
 )
 
 scalafmtOnCompile := true

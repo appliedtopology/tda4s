@@ -8,7 +8,7 @@ import scala.collection.Set
   * @param metricSpace
   *   metric space where the underlying metric is used to compute distances between points for the filtration values
   */
-trait VietorisRips(val metricSpace: MetricSpace[Int]):
+trait VietorisRips(val metricSpace: MetricSpace[Int]) extends SimplexStream:
   // partial function that computes the filtration of a simplex
   // returns -infinity is the simplex is empty,
   // 0 for a 0-dimensional simplex, and the largest pairwise distance for a higher dimensional simplex
@@ -23,7 +23,7 @@ trait VietorisRips(val metricSpace: MetricSpace[Int]):
   def simplicesInDimension(dimension: Int): Iterator[Simplex]
 
   // Get the simplexes by iterating through the elements of the metric space and storing them in a flattened list
-  def simplices(): Iterator[Simplex] = metricSpace.elements.indices.iterator.flatMap(simplicesInDimension)
+  def simplices(): Iterator[Simplex] = (0 to metricSpace.elements.size).iterator.flatMap(simplicesInDimension)
 
 /** Class for the Naive Vietoris Rips Stream formulation. Naive in the sense that no optimizations are applied to speed computation. It
   * extends the Vietoris Rips Trait
